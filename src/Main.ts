@@ -2,6 +2,7 @@
 /// <reference path="easeljs/easeljs.d.ts" />
 /// <reference path="Path.ts" />
 /// <reference path="ColorUtil.ts" />
+/// <reference path="GraphicUtil.ts" />
 /// <reference path="ParticleEmitter.ts" />
 /// <reference path="Particle.ts" />
 
@@ -95,7 +96,10 @@ namespace project {
 		private canvasForDisplay:HTMLCanvasElement;
 		private pathList:project.Path[];
 		private mousePositions:{x:number;y:number;isDown:boolean}[];
-
+		/** 自動的にアニメーションしている最中であるかどうかを示します。 */
+		private _isAutoAnimation:boolean;
+		/** 自動的にアニメーションしているときの座標です。 */
+		private _pointAutoMotion:createjs.Point;
 
 		constructor() {
 			super();
@@ -139,6 +143,40 @@ namespace project {
 			this._shadow.blendMode = PIXI.BLEND_MODES.SCREEN;
 			this.addChild(this._shadow);
 
+			// -------------------------
+			// オープニングアニメーション
+			// -------------------------
+			var sx = window.innerWidth / 2;
+			var sy = window.innerHeight / 2;
+
+
+			this._isAutoAnimation = true;
+			var points = GraphicUtil.createStartPoints(window.innerWidth / 3, sx, sy);
+			this._pointAutoMotion = new createjs.Point(points[4].x, points[4].y);
+			this._emitter.latestX = this._emitter.x = points[0].x;
+			this._emitter.latestY = this._emitter.y = points[0].y;
+			var tw = createjs.Tween
+				.get(this._pointAutoMotion);
+
+			for (var i = 0; i < 2; i++) {
+				for (var j = 0; j < points.length; j++) {
+					tw.to(points[j], 250 + 100 * Math.random(), createjs.Ease.quartInOut);
+				}
+			}
+			tw.call(()=> {
+				this._isAutoAnimation = false;
+				this._isDown = false;
+				this.buttonMode = true;
+
+				document.getElementById("attention").classList.add("show");
+			});
+			this._isDown = true;
+			this.buttonMode = false;
+
+
+			// -------------------------
+			// イベントの登録
+			// -------------------------
 			this
 				// events for drag start
 				.on("mousedown", this.handleMouseDown, this)
@@ -167,6 +205,14 @@ namespace project {
 		 */
 		private enterFrameHandler(event:createjs.Event):void {
 
+			if (this._isAutoAnimation == true) {
+				// オープニング中は自動的に代入する
+				this._emitter.latestX = this._pointAutoMotion.x;
+				this._emitter.latestY = this._pointAutoMotion.y;
+			} else {
+				// mousemove イベントでセットされる
+			}
+
 			if (this._isDown) {
 				this.createParticle();
 			}
@@ -186,7 +232,7 @@ namespace project {
 
 			var gCurve = this._lines.graphics;
 			gCurve.clear();
-			gCurve.setStrokeStyle(1)
+			gCurve.setStrokeStyle(1);
 
 			for (var i = 0; i < this.pathList.length; i++) {
 				var p = this.pathList[i];
@@ -274,6 +320,10 @@ namespace project {
 
 
 		private handleMouseDown(event:PIXI.interaction.InteractionEvent):void {
+			if (this._isAutoAnimation == true) {
+				return; // OPアニメーション中はイベントを無効化
+			}
+
 			var data = event.data;
 			this._isDown = true;
 
@@ -284,6 +334,10 @@ namespace project {
 		}
 
 		private handleMouseMove(event:PIXI.interaction.InteractionEvent):void {
+			if (this._isAutoAnimation == true) {
+				return; // OPアニメーション中はイベントを無効化
+			}
+
 			var data = event.data;
 
 			this._emitter.latestX = data.global.x;
@@ -291,6 +345,10 @@ namespace project {
 		}
 
 		private handleMouseUp(event:PIXI.interaction.InteractionEvent):void {
+			if (this._isAutoAnimation == true) {
+				return; // OPアニメーション中はイベントを無効化
+			}
+
 			var data = event.data;
 			this._isDown = false;
 

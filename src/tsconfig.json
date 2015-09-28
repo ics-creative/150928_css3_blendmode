@@ -8,6 +8,7 @@
   },
   "files": [
     "ColorUtil.ts",
+    "GraphicUtil.ts",
     "Path.ts",
     "Particle.ts",
     "ParticleEmitter.ts",

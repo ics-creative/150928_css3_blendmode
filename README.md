@@ -8,7 +8,7 @@ http://ics-creative.github.io/150928_css3_blendmode/
 
 ## 解説記事
 
-詳しくはICS LABに書いた記事をご覧ください。CSS3 の mix-blend-mode プロパティーを利用して作っています。	
+詳しくはICS LABに書いた記事をご覧ください。CSS3 の mix-blend-mode プロパティーを利用して作っています。
 
 http://ics-web.jp/lab/?p=8376
 

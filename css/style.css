@@ -21,3 +21,21 @@ canvas.drawing {
     bottom: 0;
     right: 0;
 }
+
+#attention {
+    font-family: 'Source Sans Pro', sans-serif;
+    position: absolute;
+    bottom: 20px;
+    font-size: 32px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: #fff;
+    z-index: 100;
+    pointer-events: none;
+    transition: transform 0.75s;
+    transform: translate(0, 60px);
+}
+#attention.show {
+    transform: translate(0, 0px);
+}

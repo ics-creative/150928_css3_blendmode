@@ -62,6 +62,41 @@ var project;
     })();
     project.ColorUtil = ColorUtil;
 })(project || (project = {}));
+var project;
+(function (project) {
+    /**
+     * グラフィックのユーティリティークラスです。
+     * @class project.GraphicUtil
+     */
+    var GraphicUtil = (function () {
+        function GraphicUtil() {
+        }
+        /**
+         * 五芒星の頂点座標を計算します。
+         * @param radius {number}    半径
+         * @returns {{x:number; y:number;}[]}
+         */
+        GraphicUtil.createStartPoints = function (radius, offsetX, offsetY) {
+            //五芒星の時の角度
+            var c1 = GraphicUtil.createCordinate(radius, -90, offsetX, offsetY);
+            var c2 = GraphicUtil.createCordinate(radius, -234, offsetX, offsetY);
+            var c3 = GraphicUtil.createCordinate(radius, -18, offsetX, offsetY);
+            var c4 = GraphicUtil.createCordinate(radius, -162, offsetX, offsetY);
+            var c5 = GraphicUtil.createCordinate(radius, -306, offsetX, offsetY);
+            return [c1, c2, c3, c4, c5];
+        };
+        GraphicUtil.createCordinate = function (radius, angle, offsetX, offsetY) {
+            var x = radius * Math.cos(angle / 180 * Math.PI);
+            var y = radius * Math.sin(angle / 180 * Math.PI);
+            return {
+                "x": x + offsetX,
+                "y": y + offsetY
+            };
+        };
+        return GraphicUtil;
+    })();
+    project.GraphicUtil = GraphicUtil;
+})(project || (project = {}));
 /// <reference path="easeljs/easeljs.d.ts" />
 var project;
 (function (project) {
@@ -499,6 +534,7 @@ var project;
 /// <reference path="easeljs/easeljs.d.ts" />
 /// <reference path="Path.ts" />
 /// <reference path="ColorUtil.ts" />
+/// <reference path="GraphicUtil.ts" />
 /// <reference path="ParticleEmitter.ts" />
 /// <reference path="Particle.ts" />
 var project;
@@ -592,6 +628,34 @@ var project;
             this._shadow = new PIXI.Sprite(PIXI.Texture.fromImage("imgs/Shadow-assets/Shadow.png"));
             this._shadow.blendMode = PIXI.BLEND_MODES.SCREEN;
             this.addChild(this._shadow);
+            // -------------------------
+            // オープニングアニメーション
+            // -------------------------
+            var sx = window.innerWidth / 2;
+            var sy = window.innerHeight / 2;
+            this._isAutoAnimation = true;
+            var points = project.GraphicUtil.createStartPoints(window.innerWidth / 3, sx, sy);
+            this._pointAutoMotion = new createjs.Point(points[4].x, points[4].y);
+            this._emitter.latestX = this._emitter.x = points[0].x;
+            this._emitter.latestY = this._emitter.y = points[0].y;
+            var tw = createjs.Tween
+                .get(this._pointAutoMotion);
+            for (var i = 0; i < 2; i++) {
+                for (var j = 0; j < points.length; j++) {
+                    tw.to(points[j], 250 + 100 * Math.random(), createjs.Ease.quartInOut);
+                }
+            }
+            tw.call(function () {
+                _this._isAutoAnimation = false;
+                _this._isDown = false;
+                _this.buttonMode = true;
+                document.getElementById("attention").classList.add("show");
+            });
+            this._isDown = true;
+            this.buttonMode = false;
+            // -------------------------
+            // イベントの登録
+            // -------------------------
             this
                 .on("mousedown", this.handleMouseDown, this)
                 .on('touchstart', this.handleMouseDown, this)
@@ -612,6 +676,13 @@ var project;
          * @param event
          */
         ParticleSample.prototype.enterFrameHandler = function (event) {
+            if (this._isAutoAnimation == true) {
+                // オープニング中は自動的に代入する
+                this._emitter.latestX = this._pointAutoMotion.x;
+                this._emitter.latestY = this._pointAutoMotion.y;
+            }
+            else {
+            }
             if (this._isDown) {
                 this.createParticle();
             }
@@ -688,6 +759,9 @@ var project;
             this.stageEaselJS.update();
         };
         ParticleSample.prototype.handleMouseDown = function (event) {
+            if (this._isAutoAnimation == true) {
+                return; // OPアニメーション中はイベントを無効化
+            }
             var data = event.data;
             this._isDown = true;
             this._emitter.x = data.global.x;
@@ -696,11 +770,17 @@ var project;
             this._emitter.latestY = data.global.y;
         };
         ParticleSample.prototype.handleMouseMove = function (event) {
+            if (this._isAutoAnimation == true) {
+                return; // OPアニメーション中はイベントを無効化
+            }
             var data = event.data;
             this._emitter.latestX = data.global.x;
             this._emitter.latestY = data.global.y;
         };
         ParticleSample.prototype.handleMouseUp = function (event) {
+            if (this._isAutoAnimation == true) {
+                return; // OPアニメーション中はイベントを無効化
+            }
             var data = event.data;
             this._isDown = false;
             this._emitter.latestX = data.global.x;
