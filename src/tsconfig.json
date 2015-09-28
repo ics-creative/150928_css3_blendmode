@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "out": "js/main.js",
+    "sourceMap": true
+  },
+  "files": [
+    "ColorUtil.ts",
+    "Path.ts",
+    "Particle.ts",
+    "ParticleEmitter.ts",
+    "Main.ts"
+  ]
+}
